@@ -82,7 +82,7 @@ int findByCedula (int cedula){
 }
 
 void actualizarFactura() {
-    int cedula,pos;
+    int cedula, pos;
     struct Factura factura;
 
     printf("Ingrese la cedula del cliente: ");
@@ -96,14 +96,30 @@ void actualizarFactura() {
     pos = findByCedula(cedula);
 
     if (pos != -1) {
+        FILE *F = fopen("facturas.dat", "rb");
+        if (F == NULL) {
+            printf("Error al abrir el archivo.\n");
+            return;
+        }
+
+        fseek(F, pos * sizeof(struct Factura), SEEK_SET);
+        fread(&factura, sizeof(struct Factura), 1, F);
+        fclose(F);
+
+        // Verificar si la factura está activa
+        if (factura.activa == 0) {
+            printf("Error: La factura ha sido eliminada y no se puede actualizar.\n");
+            return;
+        }
+
         printf("Ingrese el nombre actualizado del cliente: ");
         leerCadena(factura.nombre, 20);
 
-        printf("Ingrese el numero actualizado de productos: ");
+        printf("Ingrese el número actualizado de productos: ");
         scanf("%d", &factura.nProductos);
 
         if (factura.nProductos < 0) {
-            printf("Error: El numero de productos no puede ser negativo.\n");
+            printf("Error: El número de productos no puede ser negativo.\n");
             return;
         }
 
@@ -138,6 +154,7 @@ void actualizarFactura() {
         updateFactura(&factura, pos);
     }
 }
+
 
 void deleteFactura() {
     int cedula;
